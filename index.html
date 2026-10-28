@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>M-PONSEL - POS Konter HP & Pulsa</title>
-
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -18,9 +17,7 @@
       }
     }
   </script>
-
   <script src="https://unpkg.com/lucide@latest"></script>
-
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
     body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at 10% 20%, rgba(12, 74, 110, 0.4) 0%, rgba(3, 7, 18, 0.95) 90%), radial-gradient(circle at 90% 80%, rgba(88, 28, 135, 0.3) 0%, rgba(3, 7, 18, 0.98) 90%); background-attachment: fixed; }
@@ -44,469 +41,79 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body class="text-slate-100 min-h-screen flex flex-col bg-grid-pattern relative antialiased selection:bg-cyan-500 selection:text-white">
-
-  <!-- Glow effects -->
   <div class="fixed top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
   <div class="fixed bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
-
-  <!-- AUTH / LOGIN OVERLAY -->
-  <div id="loginOverlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md">
-    <div class="w-full max-w-md glass-panel rounded-2xl p-8 border border-cyan-500/20 shadow-2xl relative overflow-hidden">
-      <div class="absolute -top-12 -right-12 w-32 h-32 bg-cyan-500/20 rounded-full blur-2xl"></div>
-      <div class="text-center mb-8">
-        <div class="inline-flex p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 mb-3 shadow-lg shadow-cyan-500/10"><i data-lucide="smartphone" class="w-10 h-10"></i></div>
-        <h1 class="text-3xl font-extrabold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-sky-200 to-indigo-300">M-PONSEL</h1>
-        <p class="text-sm text-slate-400 mt-1">Sistem Kasir Konter HP & Pulsa</p>
-      </div>
-      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5">
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">Username</label>
-          <div class="relative">
-            <i data-lucide="user" class="w-5 h-5 absolute left-3.5 top-3 text-slate-400"></i>
-            <input type="text" id="loginUsername" required class="w-full glass-input pl-11 pr-4 py-2.5 rounded-xl outline-none transition text-sm" placeholder="Masukkan username ">
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">Password</label>
-          <div class="relative">
-            <i data-lucide="lock" class="w-5 h-5 absolute left-3.5 top-3 text-slate-400"></i>
-            <input type="password" id="loginPassword" required class="w-full glass-input pl-11 pr-10 py-2.5 rounded-xl outline-none transition text-sm" placeholder="Masukkan password ">
-            <button type="button" onclick="togglePasswordVisibility('loginPassword', 'loginPassIcon')" class="absolute right-3 top-3 text-slate-400 hover:text-cyan-400"><i data-lucide="eye" id="loginPassIcon" class="w-4 h-4"></i></button>
-          </div>
-        </div>
-        <div id="loginError" class="hidden text-xs text-rose-400 bg-rose-500/10 border border-rose-500/30 p-3 rounded-xl flex items-center gap-2">
-          <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i><span id="loginErrorMsg">Username atau password salah!</span>
-        </div>
-        <button type="submit" class="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-cyan-500/25 transition flex items-center justify-center gap-2">
-          <i data-lucide="log-in" class="w-5 h-5"></i> Masuk Sistem
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- NAVIGATION BAR -->
-  <header class="sticky top-0 z-40 glass-panel border-b border-slate-800/80">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16">
-        <div class="flex items-center gap-3">
-          <div class="p-2 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl text-white shadow-lg shadow-cyan-500/20"><i data-lucide="smartphone" class="w-6 h-6"></i></div>
-          <div><h1 class="font-extrabold text-xl tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-sky-200 to-white">M-PONSEL</h1><p class="text-[10px] text-cyan-400/80 font-mono tracking-widest uppercase">POS & Counter System</p></div>
-        </div>
-        <nav class="hidden md:flex items-center space-x-1 bg-slate-900/60 p-1 rounded-xl border border-slate-800">
-          <button onclick="switchTab('pos')" id="tab-btn-pos" class="nav-tab px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 flex items-center gap-2 text-white bg-cyan-600 shadow-lg shadow-cyan-600/30"><i data-lucide="shopping-cart" class="w-4 h-4"></i> Kasir Penjualan</button>
-          <button onclick="switchTab('inventory')" id="tab-btn-inventory" class="nav-tab px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800/60"><i data-lucide="box" class="w-4 h-4"></i> Kelola Stok</button>
-          <button onclick="switchTab('history')" id="tab-btn-history" class="nav-tab px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800/60"><i data-lucide="file-text" class="w-4 h-4"></i> Laporan & Riwayat</button>
-          <button onclick="switchTab('users')" id="tab-btn-users" class="admin-only nav-tab hidden px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800/60"><i data-lucide="users" class="w-4 h-4"></i> Kelola User</button>
-        </nav>
-        <div class="flex items-center gap-3">
-          <div class="flex items-center gap-2 bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-xl">
-            <div class="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center font-bold text-xs uppercase" id="userAvatar">A</div>
-            <div class="text-left hidden sm:block"><div class="text-xs font-semibold text-slate-200 leading-none" id="currentUserName">Admin M-Ponsel</div><div class="text-[10px] text-cyan-400 capitalize mt-0.5 leading-none" id="currentUserRole">administrator</div></div>
-          </div>
-          <button onclick="handleLogout()" title="Keluar / Logout" class="p-2 rounded-xl bg-slate-800/80 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-700/80 hover:border-rose-500/30 transition"><i data-lucide="log-out" class="w-5 h-5"></i></button>
-        </div>
-      </div>
-    </div>
-    <div class="flex md:hidden border-t border-slate-800/80 px-2 py-2 gap-1 bg-slate-950/80 overflow-x-auto">
-      <button onclick="switchTab('pos')" id="mob-tab-btn-pos" class="flex-1 py-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 bg-cyan-600 text-white min-w-[100px]"><i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i> Kasir</button>
-      <button onclick="switchTab('inventory')" id="mob-tab-btn-inventory" class="flex-1 py-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 text-slate-400 hover:bg-slate-800/60 min-w-[100px]"><i data-lucide="box" class="w-3.5 h-3.5"></i> Stok</button>
-      <button onclick="switchTab('history')" id="mob-tab-btn-history" class="flex-1 py-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 text-slate-400 hover:bg-slate-800/60 min-w-[100px]"><i data-lucide="file-text" class="w-3.5 h-3.5"></i> Laporan</button>
-      <button onclick="switchTab('users')" id="mob-tab-btn-users" class="admin-only hidden flex-1 py-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 text-slate-400 hover:bg-slate-800/60 min-w-[100px]"><i data-lucide="users" class="w-3.5 h-3.5"></i> User</button>
-    </div>
-  </header>
-
-  <!-- MAIN CONTAINER -->
   <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-
-    <!-- PEMBERITAHUAN STOK MENIPIS -->
-    <div id="lowStockAlertContainer" class="hidden mb-6"></div>
-
-    <!-- TAB 1: KASIR / POS -->
-    <section id="tab-pos" class="tab-content space-y-6">
-      <div class="flex flex-wrap items-center justify-between gap-4 glass-panel p-2 rounded-2xl">
-        <div class="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0">
-          <button onclick="switchCategory('aksesoris')" id="cat-btn-aksesoris" class="cat-btn px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 bg-cyan-500 text-slate-950 shadow-md whitespace-nowrap"><i data-lucide="headphones" class="w-4 h-4"></i> Aksesori & Barang</button>
-          <button onclick="switchCategory('pulsa')" id="cat-btn-pulsa" class="cat-btn px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 bg-slate-800/80 text-slate-300 hover:text-white whitespace-nowrap"><i data-lucide="zap" class="w-4 h-4"></i> Pulsa, Transfer & Tunai</button>
-          <button onclick="switchCategory('rokok')" id="cat-btn-rokok" class="cat-btn px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 bg-slate-800/80 text-slate-300 hover:text-white whitespace-nowrap"><i data-lucide="flame" class="w-4 h-4"></i> Rokok Ketengan</button>
-          <button onclick="switchCategory('servis')" id="cat-btn-servis" class="cat-btn px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 bg-slate-800/80 text-slate-300 hover:text-white whitespace-nowrap"><i data-lucide="wrench" class="w-4 h-4"></i> Jasa Servis HP</button>
-        </div>
-        <div class="text-xs text-slate-400 flex items-center gap-2 px-3 py-1.5 bg-slate-900/60 rounded-xl border border-slate-800"><i data-lucide="calendar" class="w-4 h-4 text-cyan-400"></i><span id="currentDateTime">--/--/----</span></div>
-      </div>
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div class="lg:col-span-7 space-y-4">
-          <div id="subtab-aksesoris" class="subtab-content space-y-4">
-            <div class="glass-panel p-4 rounded-2xl space-y-3">
-              <div class="relative"><i data-lucide="search" class="w-5 h-5 absolute left-3.5 top-3 text-slate-400"></i><input type="text" id="searchBarang" oninput="renderBarangList()" class="w-full glass-input pl-11 pr-4 py-2.5 rounded-xl outline-none text-sm" placeholder="Cari nama barang atau scan SKU/Barcode..."></div>
-            </div>
-            <div id="barangGrid" class="flex flex-col gap-2 max-h-[520px] overflow-y-auto pr-1"></div>
-          </div>
-          <div id="subtab-pulsa" class="subtab-content hidden glass-panel p-6 rounded-2xl space-y-5">
-            <h3 class="font-bold text-base text-slate-200 flex items-center gap-2 border-b border-slate-800 pb-3"><i data-lucide="smartphone-charging" class="text-cyan-400"></i> Layanan Pulsa, Transfer & Tunai</h3>
-            <div class="space-y-4">
-              <div>
-                <label class="block text-xs font-semibold text-slate-400 mb-1.5">No. HP / No. Rekening / Keterangan</label>
-                <div class="relative">
-                  <input type="tel" id="pulsaNoHp" oninput="detectOperator()" class="w-full glass-input text-lg font-mono tracking-wider pl-4 pr-12 py-3 rounded-xl outline-none" placeholder="08xxxxxxxxxx / No Rekening">
-                  <span id="operatorBadge" class="absolute right-3 top-3 text-xs font-bold px-2.5 py-1 rounded-md bg-slate-800 text-slate-400">Auto</span>
-                </div>
-              </div>
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <button type="button" onclick="selectOperator('Telkomsel')" class="op-btn p-2.5 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-cyan-500/50 text-xs font-semibold flex items-center justify-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-500"></span> Telkomsel</button>
-                <button type="button" onclick="selectOperator('Indosat')" class="op-btn p-2.5 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-cyan-500/50 text-xs font-semibold flex items-center justify-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Indosat</button>
-                <button type="button" onclick="selectOperator('XL')" class="op-btn p-2.5 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-cyan-500/50 text-xs font-semibold flex items-center justify-center gap-1.5"><span class="w-2 h-2 rounded-full bg-blue-500"></span> XL / AXIS</button>
-                <button type="button" onclick="selectOperator('E-Money')" class="op-btn p-2.5 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-cyan-500/50 text-xs font-semibold flex items-center justify-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> E-Wallet</button>
-                <button type="button" onclick="selectOperator('Bank BCA')" class="op-btn p-2.5 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-cyan-500/50 text-xs font-semibold flex items-center justify-center gap-1.5"><span class="w-2 h-2 rounded-full bg-blue-600"></span> Transfer BCA</button>
-                <button type="button" onclick="selectOperator('Bank BRI')" class="op-btn p-2.5 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-cyan-500/50 text-xs font-semibold flex items-center justify-center gap-1.5"><span class="w-2 h-2 rounded-full bg-sky-500"></span> Transfer BRI</button>
-                <button type="button" onclick="selectOperator('Setor Tunai')" class="op-btn p-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:border-emerald-500/70 text-xs font-semibold flex items-center justify-center gap-1.5"><i data-lucide="arrow-down-circle" class="w-3.5 h-3.5"></i> Setor Tunai</button>
-                <button type="button" onclick="selectOperator('Tarik Tunai')" class="op-btn p-2.5 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-300 hover:border-rose-500/70 text-xs font-semibold flex items-center justify-center gap-1.5"><i data-lucide="arrow-up-circle" class="w-3.5 h-3.5"></i> Tarik Tunai</button>
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-400 mb-2">Pilih Nominal Cepat</label>
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                  <button onclick="addPulsaToCart(5000, 7000)" class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-cyan-500 text-left transition"><div class="text-xs text-slate-400">Nominal 5.000</div><div class="text-sm font-bold text-cyan-400">Rp 7.000</div></button>
-                  <button onclick="addPulsaToCart(10000, 12000)" class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-cyan-500 text-left transition"><div class="text-xs text-slate-400">Nominal 10.000</div><div class="text-sm font-bold text-cyan-400">Rp 12.000</div></button>
-                  <button onclick="addPulsaToCart(20000, 22000)" class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-cyan-500 text-left transition"><div class="text-xs text-slate-400">Nominal 20.000</div><div class="text-sm font-bold text-cyan-400">Rp 22.000</div></button>
-                  <button onclick="addPulsaToCart(50000, 53000)" class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-cyan-500 text-left transition"><div class="text-xs text-slate-400">Nominal 50.000</div><div class="text-sm font-bold text-cyan-400">Rp 53.000</div></button>
-                  <button onclick="addPulsaToCart(100000, 103000)" class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-cyan-500 text-left transition"><div class="text-xs text-slate-400">Nominal 100.000</div><div class="text-sm font-bold text-cyan-400">Rp 103.000</div></button>
-                  <button onclick="toggleCustomPulsaModal()" class="p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-900/40 text-left transition flex flex-col justify-between"><div class="text-xs">Nominal / Transaksi Custom</div><div class="text-xs font-bold">+ Input Manual</div></button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- SUBTAB BARU: ROKOK KETENGAN / PERBATANG -->
-          <div id="subtab-rokok" class="subtab-content hidden glass-panel p-6 rounded-2xl space-y-4">
-            <h3 class="font-bold text-base text-slate-200 flex items-center gap-2 border-b border-slate-800 pb-3"><i data-lucide="flame" class="text-amber-400"></i> Penjualan Rokok Ketengan (Per Batang)</h3>
-            
-            <div class="space-y-3">
-              <div>
-                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Pilih Merek Rokok / Input Manual</label>
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-2">
-                  <button type="button" onclick="selectRokokBrand('Sampoerna Mild', 2500)" class="rokok-chip p-2 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-amber-500 text-left transition"><div class="text-xs font-bold text-slate-200">Sampoerna Mild</div><div class="text-[10px] text-amber-400 font-mono">Rp 2.500 / btg</div></button>
-                  <button type="button" onclick="selectRokokBrand('Djarum Super', 2500)" class="rokok-chip p-2 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-amber-500 text-left transition"><div class="text-xs font-bold text-slate-200">Djarum Super</div><div class="text-[10px] text-amber-400 font-mono">Rp 2.500 / btg</div></button>
-                  <button type="button" onclick="selectRokokBrand('Gudang Garam Filter', 2500)" class="rokok-chip p-2 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-amber-500 text-left transition"><div class="text-xs font-bold text-slate-200">GG Filter</div><div class="text-[10px] text-amber-400 font-mono">Rp 2.500 / btg</div></button>
-                  <button type="button" onclick="selectRokokBrand('Surya 12', 2500)" class="rokok-chip p-2 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-amber-500 text-left transition"><div class="text-xs font-bold text-slate-200">Surya 12</div><div class="text-[10px] text-amber-400 font-mono">Rp 2.500 / btg</div></button>
-                  <button type="button" onclick="selectRokokBrand('Esmeralda / Mild Lain', 2000)" class="rokok-chip p-2 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-amber-500 text-left transition"><div class="text-xs font-bold text-slate-200">Mild Lainnya</div><div class="text-[10px] text-amber-400 font-mono">Rp 2.000 / btg</div></button>
-                  <button type="button" onclick="selectRokokBrand('Sigaret Kretek (SKT)', 2000)" class="rokok-chip p-2 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-amber-500 text-left transition"><div class="text-xs font-bold text-slate-200">Kretek Lokal</div><div class="text-[10px] text-amber-400 font-mono">Rp 2.000 / btg</div></button>
-                </div>
-                <input type="text" id="rokokNama" class="w-full glass-input px-3.5 py-2.5 rounded-xl outline-none text-sm" placeholder="Atau ketik nama merek rokok secara manual...">
-              </div>
-
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="block text-xs font-semibold text-slate-400 mb-1">Jumlah Batang</label>
-                  <div class="flex items-center">
-                    <input type="number" id="rokokBatang" min="1" value="1" oninput="calculateRokokTotal()" class="w-full glass-input px-3.5 py-2.5 rounded-xl outline-none text-sm font-mono font-bold text-center">
-                  </div>
-                  <div class="flex gap-1 mt-1.5">
-                    <button type="button" onclick="setRokokBatang(1)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-[10px] rounded text-slate-300">1 btg</button>
-                    <button type="button" onclick="setRokokBatang(2)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-[10px] rounded text-slate-300">2 btg</button>
-                    <button type="button" onclick="setRokokBatang(3)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-[10px] rounded text-slate-300">3 btg</button>
-                    <button type="button" onclick="setRokokBatang(5)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-[10px] rounded text-slate-300">5 btg</button>
-                    <button type="button" onclick="setRokokBatang(10)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-[10px] rounded text-slate-300">1 Bungkus (12/16 btg)</button>
-                  </div>
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-slate-400 mb-1">Harga Satuan per Batang (Rp)</label>
-                  <input type="number" id="rokokHargaSatuan" value="2500" oninput="calculateRokokTotal()" class="w-full glass-input px-3.5 py-2.5 rounded-xl outline-none text-sm font-mono">
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-xs font-semibold text-slate-400 mb-1">Total Harga Rokok (Rp)</label>
-                <input type="number" id="rokokTotalHarga" readonly class="w-full glass-input px-3.5 py-2.5 rounded-xl outline-none text-sm font-mono font-bold text-amber-400 bg-slate-900 pointer-events-none" value="2500">
-              </div>
-            </div>
-
-            <button onclick="addRokokToCart()" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl shadow-lg transition flex items-center justify-center gap-2"><i data-lucide="plus-circle" class="w-5 h-5"></i> Tambahkan Rokok Ke Keranjang</button>
-          </div>
-
-          <div id="subtab-servis" class="subtab-content hidden glass-panel p-6 rounded-2xl space-y-4">
-            <h3 class="font-bold text-base text-slate-200 flex items-center gap-2 border-b border-slate-800 pb-3"><i data-lucide="wrench" class="text-amber-400"></i> Input Jasa Servis HP</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div><label class="block text-xs font-semibold text-slate-400 mb-1">Tipe HP</label><input type="text" id="servisNamaHp" class="w-full glass-input px-3.5 py-2.5 rounded-xl outline-none text-sm" placeholder="Contoh: Redmi Note 10"></div>
-              <div><label class="block text-xs font-semibold text-slate-400 mb-1">Nama Pemilik</label><input type="text" id="servisPelanggan" class="w-full glass-input px-3.5 py-2.5 rounded-xl outline-none text-sm" placeholder="Budi"></div>
-              <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-400 mb-1">Kerusakan</label><input type="text" id="servisKerusakan" class="w-full glass-input px-3.5 py-2.5 rounded-xl outline-none text-sm" placeholder="Ganti LCD"></div>
-              <div><label class="block text-xs font-semibold text-slate-400 mb-1">Modal Sparepart (Rp)</label><input type="number" id="servisModal" class="w-full glass-input px-3.5 py-2.5 rounded-xl outline-none text-sm font-mono" placeholder="0"></div>
-              <div><label class="block text-xs font-semibold text-slate-400 mb-1">Biaya Servis Total (Rp)</label><input type="number" id="servisHarga" class="w-full glass-input px-3.5 py-2.5 rounded-xl outline-none text-sm font-mono" placeholder="0"></div>
-            </div>
-            <button onclick="addServisToCart()" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl shadow-lg transition flex items-center justify-center gap-2"><i data-lucide="plus-circle" class="w-5 h-5"></i> Tambahkan Ke Keranjang</button>
-          </div>
-        </div>
-
-        <div class="lg:col-span-5">
-          <div class="glass-panel rounded-2xl p-5 space-y-4 sticky top-20">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div class="flex items-center gap-2"><i data-lucide="shopping-bag" class="text-cyan-400"></i><h2 class="font-bold text-slate-200">Keranjang Belanja</h2></div>
-              <button onclick="clearCart()" class="text-xs text-rose-400 hover:text-rose-300 flex items-center gap-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Bersihkan</button>
-            </div>
-            <div id="cartItemsList" class="space-y-2.5 max-h-[280px] overflow-y-auto pr-1 min-h-[140px]"></div>
-            <div class="border-t border-slate-800/80 pt-4 space-y-3">
-              <div class="flex justify-between items-center text-sm text-slate-400"><span>Subtotal</span><span id="cartSubtotal" class="font-mono text-slate-200 font-semibold">Rp 0</span></div>
-              <div class="flex justify-between items-center text-xl font-extrabold text-white bg-slate-900/80 p-3 rounded-xl border border-slate-800">
-                <span class="text-sm font-medium text-slate-400">TOTAL DIBAYAR</span><span id="cartTotal" class="font-mono text-cyan-400">Rp 0</span>
-              </div>
-              <div class="space-y-2 pt-1">
-                <label class="block text-xs font-semibold text-slate-400">Uang Diterima dari Pelanggan (Rp)</label>
-                <div class="relative">
-                  <input type="number" id="payAmount" oninput="calculateChange()" class="w-full glass-input text-lg font-mono font-bold px-4 py-2.5 rounded-xl outline-none" placeholder="0">
-                  <div class="absolute right-2 top-2 flex gap-1">
-                    <button onclick="setQuickPay('pas')" class="px-2 py-1 bg-slate-800 text-[11px] rounded text-slate-300 hover:bg-slate-700">Pas</button>
-                    <button onclick="setQuickPay(50000)" class="px-2 py-1 bg-slate-800 text-[11px] rounded text-slate-300 hover:bg-slate-700">50rb</button>
-                    <button onclick="setQuickPay(100000)" class="px-2 py-1 bg-slate-800 text-[11px] rounded text-slate-300 hover:bg-slate-700">100rb</button>
-                  </div>
-                </div>
-              </div>
-              <div class="flex justify-between items-center text-sm p-2 rounded-lg bg-slate-900/40"><span class="text-slate-400">Kembalian</span><span id="cartChange" class="font-mono font-bold text-emerald-400">Rp 0</span></div>
-              <button onclick="processTransaction()" id="btnProcessTx" disabled class="w-full py-3.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 text-slate-950 font-black rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-base disabled:opacity-40 disabled:cursor-not-allowed"><i data-lucide="printer" class="w-5 h-5"></i> BAYAR & CETAK STRUK</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 2: INVENTORY -->
-    <section id="tab-inventory" class="tab-content hidden space-y-6">
-      <div class="flex flex-col gap-4 glass-panel p-5 rounded-2xl">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h2 class="text-xl font-bold text-slate-100 flex items-center gap-2"><i data-lucide="box" class="text-cyan-400"></i> Manajemen Stok Produk & Database</h2>
-            <p class="text-xs text-slate-400 mt-0.5">Kelola data aksesoris, stok, serta backup dan pemulihan seluruh data aplikasi</p>
-          </div>
-          <div class="flex flex-wrap gap-2">
-            <input type="file" id="importExcelFile" accept=".xlsx, .xls" class="hidden" onchange="processExcelImport(event)">
-            <button onclick="exportInventoryExcel()" class="admin-only px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-amber-500/20 transition"><i data-lucide="download" class="w-4 h-4"></i> Export Excel</button>
-            <button onclick="document.getElementById('importExcelFile').click()" class="admin-only px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition"><i data-lucide="upload" class="w-4 h-4"></i> Import Excel</button>
-            <button onclick="openProductModal()" class="admin-only px-4 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-cyan-500/20 transition"><i data-lucide="plus" class="w-4 h-4"></i> Tambah Manual</button>
-          </div>
-        </div>
-
-        <div class="admin-only border-t border-slate-800 pt-4 flex flex-wrap items-center justify-between gap-3 bg-slate-900/50 p-4 rounded-xl border border-slate-800/80">
-          <div class="flex items-center gap-3">
-            <div class="p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/30"><i data-lucide="database" class="w-5 h-5"></i></div>
-            <div>
-              <h4 class="text-sm font-bold text-slate-200">Backup & Pemulihan Seluruh Database Aplikasi</h4>
-              <p class="text-[11px] text-slate-400">Simpan atau pulihkan seluruh data (Stok, Transaksi, Laporan Buku Kas, dan User) dalam 1 file backup.</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-2">
-            <input type="file" id="importDatabaseFile" accept=".json" class="hidden" onchange="importFullDatabase(event)">
-            <button onclick="exportFullDatabase()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition"><i data-lucide="save" class="w-4 h-4"></i> Export Database (JSON)</button>
-            <button onclick="document.getElementById('importDatabaseFile').click()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition"><i data-lucide="folder-open" class="w-4 h-4"></i> Import Database (JSON)</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="glass-panel rounded-2xl overflow-hidden">
-        <div class="p-4 border-b border-slate-800 flex items-center gap-3"><i data-lucide="search" class="w-4 h-4 text-slate-400"></i><input type="text" id="filterInventory" oninput="renderInventoryTable()" class="bg-transparent border-none text-sm text-slate-200 outline-none w-full" placeholder="Cari barang..."></div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs text-slate-300">
-            <thead class="bg-slate-900/80 uppercase text-[10px] tracking-wider text-slate-400 border-b border-slate-800">
-              <tr>
-                <th class="px-4 py-3">SKU</th><th class="px-4 py-3">Nama Produk</th><th class="px-4 py-3">Kategori</th><th class="px-4 py-3 text-right">Modal</th><th class="px-4 py-3 text-right">Jual</th><th class="px-4 py-3 text-center">Stok</th><th class="admin-only px-4 py-3 text-center">Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="inventoryTableBody" class="divide-y divide-slate-800/60 font-mono"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 3: HISTORY & REPORT -->
-    <section id="tab-history" class="tab-content hidden space-y-6">
-      
-      <div class="flex flex-wrap gap-2 glass-panel p-2 rounded-2xl w-full sm:w-fit">
-        <button onclick="switchReportTab('riwayat')" id="btn-rep-riwayat" class="px-4 py-2 bg-cyan-500 text-slate-950 text-xs font-bold rounded-xl transition shadow-md whitespace-nowrap flex items-center gap-2"><i data-lucide="history" class="w-4 h-4"></i> Riwayat Harian</button>
-        <button onclick="switchReportTab('aruskas')" id="btn-rep-aruskas" class="px-4 py-2 bg-slate-800/80 text-slate-300 hover:text-white text-xs font-bold rounded-xl transition whitespace-nowrap flex items-center gap-2"><i data-lucide="book-open" class="w-4 h-4"></i> Buku Kas</button>
-        <button onclick="switchReportTab('bulanan')" id="btn-rep-bulanan" class="px-4 py-2 bg-slate-800/80 text-slate-300 hover:text-white text-xs font-bold rounded-xl transition whitespace-nowrap flex items-center gap-2"><i data-lucide="calendar-days" class="w-4 h-4"></i> Laporan Bulanan</button>
-      </div>
-
-      <!-- VIEW 1: RIWAYAT TRANSAKSI -->
-      <div id="view-rep-riwayat" class="space-y-6">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="glass-panel p-5 rounded-2xl border-l-4 border-cyan-500"><div class="text-xs text-slate-400 font-medium">Penjualan Hari Ini</div><div id="statTotalSales" class="text-xl font-bold font-mono text-cyan-400 mt-1">Rp 0</div><div class="text-[10px] text-slate-500 mt-2"><span id="statTxCount">0</span> transaksi</div></div>
-          <div class="glass-panel p-5 rounded-2xl border-l-4 border-emerald-500"><div class="text-xs text-slate-400 font-medium">Laba Bersih Hari Ini</div><div id="statNetProfit" class="text-xl font-bold font-mono text-emerald-400 mt-1">Rp 0</div><div class="text-[10px] text-slate-500 mt-2">Estimasi bersih</div></div>
-          <div class="glass-panel p-5 rounded-2xl border-l-4 border-amber-500"><div class="text-xs text-slate-400 font-medium">Pulsa / Tunai / Transfer</div><div id="statPulsaSales" class="text-xl font-bold font-mono text-amber-400 mt-1">Rp 0</div></div>
-          <div class="glass-panel p-5 rounded-2xl border-l-4 border-purple-500"><div class="text-xs text-slate-400 font-medium">Servis HP</div><div id="statServisSales" class="text-xl font-bold font-mono text-purple-400 mt-1">Rp 0</div></div>
-        </div>
-
-        <div class="glass-panel p-5 rounded-2xl flex justify-between items-center">
-          <div><h2 class="text-lg font-bold text-slate-100 flex items-center gap-2"><i data-lucide="history" class="text-cyan-400"></i> Riwayat Transaksi</h2></div>
-          <button onclick="exportHistoryExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5"><i data-lucide="download" class="w-3.5 h-3.5"></i> Export CSV</button>
-        </div>
-
-        <div class="glass-panel rounded-2xl overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs text-slate-300">
-              <thead class="bg-slate-900/80 uppercase text-[10px] tracking-wider text-slate-400 border-b border-slate-800">
-                <tr>
-                  <th class="px-4 py-3">No Nota</th><th class="px-4 py-3">Waktu</th><th class="px-4 py-3">Kasir</th><th class="px-4 py-3">Rincian</th><th class="px-4 py-3 text-right">Total</th><th class="admin-only px-4 py-3 text-right">Laba</th><th class="px-4 py-3 text-center">Cetak</th>
-                </tr>
-              </thead>
-              <tbody id="historyTableBody" class="divide-y divide-slate-800/60 font-mono"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- VIEW 2: ARUS KAS -->
-      <div id="view-rep-aruskas" class="space-y-6 hidden">
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div class="glass-panel p-5 rounded-2xl border-l-4 border-emerald-500">
-            <div class="text-xs text-slate-400 font-medium">Total Kas Masuk</div>
-            <div id="statTotalMasuk" class="text-xl font-bold font-mono text-emerald-400 mt-1">Rp 0</div>
-            <div class="text-[10px] text-slate-500 mt-2">Penerimaan dari pelanggan & setor tunai</div>
-          </div>
-          <div class="glass-panel p-5 rounded-2xl border-l-4 border-rose-500">
-            <div class="text-xs text-slate-400 font-medium">Total Kas Keluar (Tarik Tunai / Penarikan Saldo)</div>
-            <div id="statTotalKeluar" class="text-xl font-bold font-mono text-rose-400 mt-1">Rp 0</div>
-            <div class="text-[10px] text-slate-500 mt-2">Uang fisik diberikan ke pelanggan & closing kas</div>
-          </div>
-          <div class="glass-panel p-5 rounded-2xl border-l-4 border-cyan-500">
-            <div class="text-xs text-slate-400 font-medium">Saldo Laci Kas Saat Ini</div>
-            <div id="statSaldoAkhir" class="text-xl font-bold font-mono text-cyan-400 mt-1">Rp 0</div>
-            <div class="text-[10px] text-slate-500 mt-2">Arus kas berjalan</div>
-          </div>
-        </div>
-
-        <div class="glass-panel p-5 rounded-2xl flex flex-wrap justify-between items-center gap-3">
-          <div><h2 class="text-lg font-bold text-slate-100 flex items-center gap-2"><i data-lucide="wallet" class="text-emerald-400"></i> Rincian Buku Kas</h2></div>
-          <div class="flex items-center gap-2">
-            <button onclick="tambahModal()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5"><i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Tambah Modal</button>
-            <button onclick="tarikSaldoKas()" class="px-3.5 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5"><i data-lucide="minus-circle" class="w-3.5 h-3.5"></i> Tarik Saldo</button>
-            <button onclick="resetBukuKas()" class="admin-only px-3.5 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset Kas dari 0</button>
-            <button onclick="exportArusKasExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5"><i data-lucide="download" class="w-3.5 h-3.5"></i> Export CSV</button>
-          </div>
-        </div>
-
-        <div class="glass-panel rounded-2xl overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs text-slate-300">
-              <thead class="bg-slate-900/80 uppercase text-[10px] tracking-wider text-slate-400 border-b border-slate-800">
-                <tr>
-                  <th class="px-4 py-3">Waktu</th>
-                  <th class="px-4 py-3">Keterangan Transaksi</th>
-                  <th class="px-4 py-3 text-right">Kas Masuk (+)</th>
-                  <th class="px-4 py-3 text-right">Kas Keluar (-)</th>
-                  <th class="px-4 py-3 text-right">Saldo</th>
-                </tr>
-              </thead>
-              <tbody id="arusKasTableBody" class="divide-y divide-slate-800/60 font-mono"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      
-      <!-- VIEW 3: LAPORAN BULANAN -->
-      <div id="view-rep-bulanan" class="space-y-6 hidden">
-        <div class="glass-panel p-5 rounded-2xl flex flex-wrap justify-between items-center gap-4">
-          <div>
-            <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2"><i data-lucide="calendar-days" class="text-cyan-400"></i> Rincian Laporan Transaksi Bulanan</h2>
-            <p class="text-xs text-slate-400 mt-1">Daftar seluruh nota transaksi dan rincian produk/layanan per bulan</p>
-          </div>
-          <div class="flex items-center gap-3">
-            <input type="month" id="filterBulan" onchange="renderLaporanBulanan()" class="glass-input px-3 py-2 rounded-xl text-xs font-bold outline-none text-cyan-400 cursor-pointer">
-            <button onclick="exportBulananExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5"><i data-lucide="download" class="w-3.5 h-3.5"></i> Export Excel</button>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="glass-panel p-5 rounded-2xl border-l-4 border-cyan-500">
-            <div class="text-xs text-slate-400 font-medium">Total Omzet / Penjualan (Bulan Ini)</div>
-            <div id="statBulananOmzet" class="text-2xl font-bold font-mono text-cyan-400 mt-1">Rp 0</div>
-          </div>
-          <div class="glass-panel p-5 rounded-2xl border-l-4 border-emerald-500">
-            <div class="text-xs text-slate-400 font-medium">Total Laba Bersih (Bulan Ini)</div>
-            <div id="statBulananLaba" class="text-2xl font-bold font-mono text-emerald-400 mt-1">Rp 0</div>
-          </div>
-        </div>
-
-        <div class="glass-panel rounded-2xl overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs text-slate-300">
-              <thead class="bg-slate-900/80 uppercase text-[10px] tracking-wider text-slate-400 border-b border-slate-800">
-                <tr>
-                  <th class="px-4 py-3">No Nota</th>
-                  <th class="px-4 py-3">Tanggal & Waktu</th>
-                  <th class="px-4 py-3">Kasir</th>
-                  <th class="px-4 py-3">Rincian Produk / Layanan</th>
-                  <th class="px-4 py-3 text-right">Total Tagihan</th>
-                  <th class="admin-only px-4 py-3 text-right">Laba Bersih</th>
-                </tr>
-              </thead>
-              <tbody id="bulananTableBody" class="divide-y divide-slate-800/60 font-mono"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      
-    </section>
-
-    <!-- TAB 4: USERS (ADMIN ONLY) -->
-    <section id="tab-users" class="tab-content hidden space-y-6">
-      <div class="flex items-center justify-between glass-panel p-5 rounded-2xl">
-        <div><h2 class="text-xl font-bold text-slate-100 flex items-center gap-2"><i data-lucide="users" class="text-cyan-400"></i> Manajemen User & Kasir</h2><p class="text-xs text-slate-400 mt-0.5">Kelola akun kasir, ubah password, dan hak akses pengguna</p></div>
-        <button onclick="openUserModal()" class="px-4 py-2.5 bg-cyan-500 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-2 hover:bg-cyan-400 transition shadow-lg shadow-cyan-500/20"><i data-lucide="user-plus" class="w-4 h-4"></i> Tambah User Baru</button>
-      </div>
-      <div class="glass-panel rounded-2xl overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs text-slate-300">
-            <thead class="bg-slate-900/80 uppercase text-[10px] tracking-wider text-slate-400 border-b border-slate-800">
-              <tr>
-                <th class="px-4 py-3">ID</th><th class="px-4 py-3">Nama Lengkap</th><th class="px-4 py-3">Username</th><th class="px-4 py-3">Role</th><th class="px-4 py-3 text-center">Status</th><th class="px-4 py-3 text-center">Aksi / Kontrol</th>
-              </tr>
-            </thead>
-            <tbody id="userTableBody" class="divide-y divide-slate-800/60"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
   </main>
-
-  <!-- MODAL PRODUCT -->
-  <div id="productModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-    <div class="w-full max-w-lg glass-panel rounded-2xl p-6 border border-slate-800 space-y-5">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 id="productModalTitle" class="font-bold text-lg text-slate-100">Tambah Barang</h3>
-        <button onclick="closeProductModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-      <form id="productForm" onsubmit="saveProduct(event)" class="space-y-4">
-        <input type="hidden" id="prodId">
-        <div class="grid grid-cols-2 gap-3">
-          <div><label class="block text-xs font-semibold text-slate-400 mb-1">SKU</label><input type="text" id="prodSku" required class="w-full glass-input px-3.5 py-2 rounded-xl text-xs font-mono outline-none"></div>
-          <div><label class="block text-xs font-semibold text-slate-400 mb-1">Kategori</label><select id="prodCategory" class="w-full glass-input px-3 py-2 rounded-xl text-xs outline-none bg-slate-900"><option value="Aksesori">Aksesori HP</option><option value="Charger">Charger</option><option value="Perdana">Perdana</option><option value="Sparepart">Sparepart</option></select></div>
-        </div>
-        <div><label class="block text-xs font-semibold text-slate-400 mb-1">Nama Produk</label><input type="text" id="prodName" required class="w-full glass-input px-3.5 py-2 rounded-xl text-xs outline-none"></div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-400 mb-1">Foto Barang (Opsional)</label>
-          <div class="flex items-center gap-3">
-            <div id="imagePreviewContainer" class="w-14 h-14 rounded-xl border border-dashed border-slate-600 flex items-center justify-center bg-slate-900 overflow-hidden shrink-0"><i data-lucide="image" class="w-5 h-5 text-slate-500" id="imagePlaceholder"></i><img id="prodImagePreview" class="w-full h-full object-cover hidden" src="" alt="Preview"></div>
-            <div class="flex-1"><input type="file" id="prodImage" accept="image/*" onchange="handleImageUpload(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20"><input type="hidden" id="prodImageBase64"></div>
-          </div>
-        </div>
-        <div class="grid grid-cols-3 gap-3">
-          <div><label class="block text-xs font-semibold text-slate-400 mb-1">Modal</label><input type="number" id="prodBuyPrice" required class="w-full glass-input px-3.5 py-2 rounded-xl text-xs font-mono outline-none"></div>
-          <div><label class="block text-xs font-semibold text-slate-400 mb-1">Jual</label><input type="number" id="prodSellPrice" required class="w-full glass-input px-3.5 py-2 rounded-xl text-xs font-mono outline-none"></div>
-          <div><label class="block text-xs font-semibold text-slate-400 mb-1">Stok</label><input type="number" id="prodStock" required class="w-full glass-input px-3.5 py-2 rounded-xl text-xs font-mono outline-none"></div>
-        </div>
-        <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
-          <button type="button" onclick="closeProductModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-xs">Batal</button>
-          <button type="submit" class="px-5 py-2 rounded-xl bg-cyan-500 text-slate-950 text-xs font-bold">Simpan</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL USER -->
-  <div id="userModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-    <div class="w-full max-w-md glass-panel rounded-2xl p-6 border border-slate-800 space-y-5">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 id="userModalTitle" class="font-bold text-lg text-slate-100">Tambah User Baru</h3>
-        <button onclick="closeUserModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-      <form id="userForm" onsubmit="saveUser(event)" class="space-y-4">
-        <input type="hidden" id="userId">
-        <div><label class="block text-xs font-semibold text-slate-400 mb-1">Nama Lengkap</label><input type="text" id="userName" required class="w-full glass-input px-3.5 py-2 rounded-xl text-xs outline-none" placeholder="Contoh: Budi Kasir"></div>
-        <div><label class="block text-xs font-semibold text-slate-400 mb-1">Username Login</label><input type="text" id="userUsername" required class="w-full glass-input px-3.5 py-2 rounded-xl text-xs outline-none" placeholder="budikasir"></div>
-        <div><label class="block text-xs font-semibold text-slate-400 mb-1">Password</label><div class="relative"><input type="password" id="userPassword" required class="w-full glass-input pl-3.5 pr-10 py-2 rounded-xl text-xs outline-none" placeholder="******"><button type="button" onclick="togglePasswordVisibility('userPassword', 'userPassIcon')" class="absolute right-3 top-2 text-slate-400 hover:text-cyan-400"><i data-lucide="eye" id="userPassIcon" class="w-4 h-4"></i></button></div></div>
+  <script>
+    let appState = { currentUser: null, cart: [], currentCategory: 'aksesoris', selectedOperator: 'Telkomsel' };
+    const defaultProducts = [
+      { id: '1', sku: 'ACC-001', name: 'Kabel Data Type-C Fast Charge', category: 'Charger', buyPrice: 10000, sellPrice: 25000, stock: 18, image: '' },
+      { id: '2', sku: 'ACC-002', name: 'Charger Original 20W', category: 'Charger', buyPrice: 45000, sellPrice: 85000, stock: 12, image: '' },
+      { id: '3', sku: 'ACC-003', name: 'Tempered Glass All Type', category: 'Aksesori', buyPrice: 5000, sellPrice: 20000, stock: 45, image: '' }
+    ];
+    const defaultUsers = [
+      { id: 'u1', name: 'Administrator M-Ponsel', username: 'admin', password: 'admin123', role: 'admin', status: 'active' },
+      { id: 'u2', name: 'Kasir Toko 1', username: 'kasir', password: 'kasir123', role: 'kasir', status: 'active' }
+    ];
+    function initData() {
+      if (!localStorage.getItem('mponsel_products')) localStorage.setItem('mponsel_products', JSON.stringify(defaultProducts));
+      if (!localStorage.getItem('mponsel_users')) localStorage.setItem('mponsel_users', JSON.stringify(defaultUsers));
+      if (!localStorage.getItem('mponsel_transactions')) localStorage.setItem('mponsel_transactions', JSON.stringify([]));
+    }
+    
+    function getProducts() { return JSON.parse(localStorage.getItem('mponsel_products')) || []; }
+    function setProducts(data) { 
+        localStorage.setItem('mponsel_products', JSON.stringify(data)); 
+        if (window.saveProductsToFirestore) {
+            window.saveProductsToFirestore(data);
+        }
+    }
+    function getUsers() { return JSON.parse(localStorage.getItem('mponsel_users')) || []; }
+    function setUsers(data) { localStorage.setItem('mponsel_users', JSON.stringify(data)); }
+    function getTransactions() { return JSON.parse(localStorage.getItem('mponsel_transactions')) || []; }
+    function setTransactions(data) { localStorage.setItem('mponsel_transactions', JSON.stringify(data)); }
+    document.addEventListener("DOMContentLoaded", () => {
+      initData();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyDTPtqlkPppav6Fcz7dknQG4gTu7djeBY4",
+    authDomain: "m-ponsel.firebaseapp.com",
+    projectId: "m-ponsel",
+    storageBucket: "m-ponsel.firebasestorage.app",
+    messagingSenderId: "273631311807",
+    appId: "1:273631311807:web:2ac9d0e500cde8a0b7930a"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  window.saveProductsToFirestore = async function(data) {
+    try {
+      await setDoc(doc(db, "database", "products"), { items: data });
+      console.log("Data produk sukses disinkronkan ke Firestore.");
+    } catch (error) {
+      console.error("Gagal menyimpan ke Firestore: ", error);
+    }
+  };
+  async function loadProductsFromFirestore() {
+    try {
+      const docSnap = await getDoc(doc(db, "database", "products"));
+      if (docSnap.exists()) {
+        const cloudData = docSnap.data().items || [];
+        localStorage.setItem('mponsel_products', JSON.stringify(cloudData));
+        if (typeof window.renderBarangList === "function") window.renderBarangList();
+        if (typeof window.renderInventoryTable === "function") window.renderInventoryTable();
+        if (typeof window.checkLowStock === "function") window.checkLowStock();
+      }
+    } catch (error) {
+      console.error("Gagal menarik data dari Firestore: ", error);
+    }
+  }
+  loadProductsFromFirestore();
+</script>

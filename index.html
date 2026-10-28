@@ -1424,11 +1424,65 @@
     }
 
     function resetBukuKas() {
-      if (confirm('PERHATIAN: Apakah Anda yakin ingin menghapus seluruh riwayat transaksi di Buku Kas dan memulai kembali dari 0 bersih?')) {
-        setTransactions([]);
+      const transactions = getTransactions().slice().reverse();
+      
+      // 1. Hitung total saldo laci kas berjalan saat ini
+      let saldo = 0;
+      transactions.forEach(tx => {
+        let kasMasuk = 0, kasKeluar = 0;
+        if (tx.id.startsWith('MDL-WD-')) {
+            kasKeluar = tx.totalAmount;
+        } else {
+            tx.items.forEach(item => {
+              if (item.subtype === 'Tarik Tunai') { 
+                  kasKeluar += (item.nominal || 0); 
+                  kasMasuk += (item.sellPrice || 0); 
+              } else { 
+                  kasMasuk += (item.sellPrice * item.qty); 
+              }
+            });
+        }
+        saldo += (kasMasuk - kasKeluar);
+      });
+
+      if (saldo <= 0) {
+        alert('Saldo laci kas saat ini sudah Rp 0. Tidak ada yang perlu di-reset.');
+        return;
+      }
+
+      // 2. Konfirmasi tanpa menghapus data
+      if (confirm(`Saldo kas saat ini: Rp ${saldo.toLocaleString('id-ID')}.\n\nYakin ingin melakukan RESET KAS ke Rp 0?\n(Tindakan ini hanya akan menarik saldo kas menjadi 0, Riwayat Transaksi & Laporan Bulanan TETAP AMAN dan tidak akan terhapus).`)) {
+        const transactionsList = getTransactions();
+        
+        // 3. Buat transaksi penarikan khusus untuk menolkan saldo kas (balancing)
+        const newTx = { 
+            id: 'MDL-WD-' + Date.now().toString().slice(-4), 
+            date: new Date().toISOString(), 
+            cashier: appState.currentUser ? appState.currentUser.name : 'Admin', 
+            items: [{
+              id: 'RESET-' + Date.now(),
+              name: 'Penyesuaian Reset Kas ke Rp 0',
+              type: 'tarik_saldo',
+              subtype: 'Tarik Tunai',
+              buyPrice: 0,
+              sellPrice: 0,
+              nominal: saldo,
+              qty: 1
+            }], 
+            totalAmount: saldo, 
+            payAmount: saldo, 
+            changeAmount: 0, 
+            netProfit: 0 
+        };
+        
+        // 4. Masukkan ke sistem tanpa menghapus array transaksi yang sudah ada
+        transactionsList.unshift(newTx); 
+        setTransactions(transactionsList);
+        
+        // 5. Update tampilan layar
         renderArusKas();
         updateDashboardStats();
-        alert('Buku Kas telah di-reset total dari 0.');
+        alert('Sukses! Saldo laci kas berhasil di-reset ke Rp 0. Data Laporan Bulanan Anda tetap aman.');
       }
     }
 

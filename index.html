@@ -35,10 +35,84 @@
     ::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.3); border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(56, 189, 248, 0.6); }
     @media print {
-      @page { margin: 0; size: 58mm auto; }
-      body * { visibility: hidden; }
-      #printableReceipt, #printableReceipt * { visibility: visible; }
-      #printableReceipt { position: absolute; left: 0; top: 0; width: 58mm !important; padding: 2mm 3mm !important; margin: 0 !important; background: white !important; color: black !important; font-size: 9pt !important; line-height: 1.2 !important; box-shadow: none !important; }
+      @page { 
+        margin: 0; 
+        size: 58mm auto; 
+      }
+      html, body { 
+        background: #ffffff !important; 
+        color: #000000 !important; 
+        margin: 0 !important; 
+        padding: 0 !important; 
+        width: 58mm !important; 
+        height: auto !important; 
+        overflow: visible !important;
+      }
+      
+      /* Sembunyikan seluruh elemen aplikasi utama */
+      body > * { 
+        display: none !important; 
+      }
+      
+      /* Tampilkan hanya container modal struk */
+      body > #receiptModal { 
+        display: block !important; 
+        position: static !important; 
+        width: 58mm !important; 
+        height: auto !important; 
+        margin: 0 !important; 
+        padding: 0 !important; 
+        background: #ffffff !important; 
+        backdrop-filter: none !important; 
+        border: none !important;
+        box-shadow: none !important;
+      }
+      
+      #receiptModal * { 
+        visibility: visible !important; 
+        color: #000000 !important;
+      }
+      
+      #receiptModal > div { 
+        background: #ffffff !important; 
+        border: none !important; 
+        padding: 0 !important; 
+        margin: 0 !important; 
+        width: 58mm !important; 
+        max-width: 58mm !important; 
+        box-shadow: none !important; 
+      }
+      
+      #printableReceipt { 
+        display: block !important;
+        position: static !important; 
+        width: 58mm !important; 
+        padding: 2mm 3mm !important; 
+        margin: 0 !important; 
+        background: #ffffff !important; 
+        color: #000000 !important; 
+        font-size: 8.5pt !important; 
+        line-height: 1.25 !important; 
+        font-family: 'Courier New', Courier, monospace !important; 
+        box-shadow: none !important; 
+        border-radius: 0 !important; 
+        page-break-inside: avoid !important;
+        page-break-after: avoid !important;
+      }
+
+      /* PAKSA SEMUA TEKS DAN GARIS STRUK MENJADI BOLD HITAM PEKAT */
+      #printableReceipt, 
+      #printableReceipt * { 
+        color: #000000 !important; 
+        font-weight: 800 !important; /* Bold ekstra tebal */
+        border-color: #000000 !important; /* Garis pemisah tegas dan hitam */
+        -webkit-text-stroke: 0.25px #000000 !important; /* Efek tebal ganda untuk thermal head */
+      }
+      
+      /* Sembunyikan tombol cetak & tutup saat dicetak */
+      #receiptModal button, .no-print { 
+        display: none !important; 
+      }
     }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -1237,7 +1311,7 @@
       checkLowStock();
     }
 
-    function showReceipt(tx) {
+    function showReceipt(tx, autoPrint = true) {
       document.getElementById('recNoteNo').innerText = `#${tx.id}`; 
       document.getElementById('recDate').innerText = new Date(tx.date).toLocaleString('id-ID'); 
       document.getElementById('recCashier').innerText = tx.cashier;
@@ -1256,6 +1330,12 @@
       document.getElementById('recPay').innerText = `Rp ${tx.payAmount.toLocaleString('id-ID')}`; 
       document.getElementById('recChange').innerText = `Rp ${tx.changeAmount.toLocaleString('id-ID')}`; 
       document.getElementById('receiptModal').classList.remove('hidden');
+
+      if (autoPrint) {
+        setTimeout(() => {
+          window.print();
+        }, 300);
+      }
     }
     
     function closeReceiptModal() { 
@@ -1291,7 +1371,7 @@
         const itemsSummary = tx.items.map(i => `${i.name} (${i.qty}x)`).join(', '); 
         const tr = document.createElement('tr'); 
         tr.className = 'hover:bg-slate-900/40 transition';
-        tr.innerHTML = `<td class="px-4 py-3 font-bold text-cyan-400">#${tx.id}</td><td class="px-4 py-3 text-slate-400 text-[11px]">${new Date(tx.date).toLocaleString('id-ID')}</td><td class="px-4 py-3 text-slate-300">${tx.cashier}</td><td class="px-4 py-3 text-slate-300 max-w-xs truncate">${itemsSummary}</td><td class="px-4 py-3 text-right font-bold text-slate-100">Rp ${tx.totalAmount.toLocaleString('id-ID')}</td><td class="admin-only px-4 py-3 text-right text-emerald-400 font-bold">Rp ${(tx.netProfit || 0).toLocaleString('id-ID')}</td><td class="px-4 py-3 text-center"><button onclick='showReceipt(${JSON.stringify(tx)})' class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-cyan-400"><i data-lucide="printer" class="w-4 h-4"></i></button></td>`;
+        tr.innerHTML = `<td class="px-4 py-3 font-bold text-cyan-400">#${tx.id}</td><td class="px-4 py-3 text-slate-400 text-[11px]">${new Date(tx.date).toLocaleString('id-ID')}</td><td class="px-4 py-3 text-slate-300">${tx.cashier}</td><td class="px-4 py-3 text-slate-300 max-w-xs truncate">${itemsSummary}</td><td class="px-4 py-3 text-right font-bold text-slate-100">Rp ${tx.totalAmount.toLocaleString('id-ID')}</td><td class="admin-only px-4 py-3 text-right text-emerald-400 font-bold">Rp ${(tx.netProfit || 0).toLocaleString('id-ID')}</td><td class="px-4 py-3 text-center"><button onclick='showReceipt(${JSON.stringify(tx)}, true)' class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-cyan-400"><i data-lucide="printer" class="w-4 h-4"></i></button></td>`;
         tbody.appendChild(tr);
       }); 
       applyUserPermissions(); 

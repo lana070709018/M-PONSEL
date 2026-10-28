@@ -49,12 +49,10 @@
         overflow: visible !important;
       }
       
-      /* Sembunyikan seluruh elemen aplikasi utama */
       body > * { 
         display: none !important; 
       }
       
-      /* Tampilkan hanya container modal struk */
       body > #receiptModal { 
         display: block !important; 
         position: static !important; 
@@ -100,16 +98,14 @@
         page-break-after: avoid !important;
       }
 
-      /* PAKSA SEMUA TEKS DAN GARIS STRUK MENJADI BOLD HITAM PEKAT */
       #printableReceipt, 
       #printableReceipt * { 
         color: #000000 !important; 
-        font-weight: 800 !important; /* Bold ekstra tebal */
-        border-color: #000000 !important; /* Garis pemisah tegas dan hitam */
-        -webkit-text-stroke: 0.25px #000000 !important; /* Efek tebal ganda untuk thermal head */
+        font-weight: 800 !important; 
+        border-color: #000000 !important; 
+        -webkit-text-stroke: 0.25px #000000 !important; 
       }
       
-      /* Sembunyikan tombol cetak & tutup saat dicetak */
       #receiptModal button, .no-print { 
         display: none !important; 
       }
@@ -326,8 +322,8 @@
                   <input type="number" id="payAmount" oninput="calculateChange()" class="w-full glass-input text-lg font-mono font-bold px-4 py-2.5 rounded-xl outline-none" placeholder="0">
                   <div class="absolute right-2 top-2 flex gap-1">
                     <button onclick="setQuickPay('pas')" class="px-2 py-1 bg-slate-800 text-[11px] rounded text-slate-300 hover:bg-slate-700">Pas</button>
-                    <button onclick="setQuickPay(50000)" class="px-2 py-1 bg-slate-800 text-[11px] rounded text-slate-300 hover:bg-slate-700">50rb</button>
-                    <button onclick="setQuickPay(100000)" class="px-2 py-1 bg-slate-800 text-[11px] rounded text-slate-300 hover:bg-slate-700">100rb</button>
+                    <button onclick="setQuickPay(50000)" class="px-2 py-1 bg-slate-800 text-[11px] rounded text-slate-700">50rb</button>
+                    <button onclick="setQuickPay(100000)" class="px-2 py-1 bg-slate-800 text-[11px] rounded text-slate-700">100rb</button>
                   </div>
                 </div>
               </div>
@@ -711,7 +707,6 @@
         return;
       }
 
-      // Estimasi modal kasar (misal modal diasumsikan 80% dari harga jual ketengan agar profit harian akurat, atau 0)
       const estimasiModalSatuan = Math.round(satuan * 0.8);
 
       appState.cart.push({
@@ -724,7 +719,6 @@
         qty: 1
       });
 
-      // Reset form rokok
       document.getElementById('rokokBatang').value = '1';
       calculateRokokTotal();
       renderCart();
@@ -1426,7 +1420,6 @@
     function resetBukuKas() {
       const transactions = getTransactions().slice().reverse();
       
-      // 1. Hitung total saldo laci kas berjalan saat ini
       let saldo = 0;
       transactions.forEach(tx => {
         let kasMasuk = 0, kasKeluar = 0;
@@ -1450,11 +1443,9 @@
         return;
       }
 
-      // 2. Konfirmasi tanpa menghapus data
       if (confirm(`Saldo kas saat ini: Rp ${saldo.toLocaleString('id-ID')}.\n\nYakin ingin melakukan RESET KAS ke Rp 0?\n(Tindakan ini hanya akan menarik saldo kas menjadi 0, Riwayat Transaksi & Laporan Bulanan TETAP AMAN dan tidak akan terhapus).`)) {
         const transactionsList = getTransactions();
         
-        // 3. Buat transaksi penarikan khusus untuk menolkan saldo kas (balancing)
         const newTx = { 
             id: 'MDL-WD-' + Date.now().toString().slice(-4), 
             date: new Date().toISOString(), 
@@ -1475,11 +1466,9 @@
             netProfit: 0 
         };
         
-        // 4. Masukkan ke sistem tanpa menghapus array transaksi yang sudah ada
         transactionsList.unshift(newTx); 
         setTransactions(transactionsList);
         
-        // 5. Update tampilan layar
         renderArusKas();
         updateDashboardStats();
         alert('Sukses! Saldo laci kas berhasil di-reset ke Rp 0. Data Laporan Bulanan Anda tetap aman.');
@@ -1967,14 +1956,9 @@
 </body>
 </html>
 <script type="module">
-  // Import the functions you need from the SDKs you need
   import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
   const firebaseConfig = {
     apiKey: "AIzaSyDTPtqlkPppav6Fcz7dknQG4gTu7djeBY4",
     authDomain: "m-ponsel.firebaseapp.com",
@@ -1985,7 +1969,6 @@
     measurementId: "G-FH6VSFBCPN"
   };
 
-  // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
 </script>

@@ -1833,6 +1833,30 @@
 </body>
 </html>
 <script type="module">
+  // Import fungsi yang diperlukan dari SDK Firebase
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-analytics.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+  // Konfigurasi Firebase Anda
+  const firebaseConfig = {
+    apiKey: "AIzaSyDTPtqlkPppav6Fcz7dknQG4gTu7djeBY4",
+    authDomain: "m-ponsel.firebaseapp.com",
+    projectId: "m-ponsel",
+    storageBucket: "m-ponsel.firebasestorage.app",
+    messagingSenderId: "273631311807",
+    appId: "1:273631311807:web:2ac9d0e500cde8a0b7930a",
+    measurementId: "G-FH6VSFBCPN"
+  };
+
+  // Inisialisasi Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+
+  // Inisialisasi Firestore Database
+  const db = getFirestore(app);
+</script>
+<script type="module">
   // Import the functions you need from the SDKs you need
   import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-analytics.js";

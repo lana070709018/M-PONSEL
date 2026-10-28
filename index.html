@@ -1,50 +1,53 @@
-<!DOCTYPE html>
-<html lang="id" class="dark">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>M-PONSEL - POS Konter HP & Pulsa</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: { 50: '#f0f9ff', 100: '#e0f2fe', 400: '#38bdf8', 500: '#06b6d4', 600: '#0284c7', 700: '#0369a1', 800: '#075985', 900: '#0c4a6e', 950: '#082f49' }
-          }
-        }
-      }
-    }
-  </script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
-    body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at 10% 20%, rgba(12, 74, 110, 0.4) 0%, rgba(3, 7, 18, 0.95) 90%), radial-gradient(circle at 90% 80%, rgba(88, 28, 135, 0.3) 0%, rgba(3, 7, 18, 0.98) 90%); background-attachment: fixed; }
-    .font-mono-num { font-family: 'JetBrains Mono', monospace; }
-    .bg-grid-pattern { background-size: 30px 30px; background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px); }
-    .glass-panel { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); }
-    .glass-card { background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.06); }
-    .glass-input { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.12); color: #f8fafc; }
-    .glass-input:focus { border-color: #38bdf8; box-shadow: 0 0 15px rgba(56, 189, 248, 0.25); }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
-    ::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.3); border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(56, 189, 248, 0.6); }
-    @media print {
-      @page { margin: 0; size: 58mm auto; }
-      body * { visibility: hidden; }
-      #printableReceipt, #printableReceipt * { visibility: visible; }
-      #printableReceipt { position: absolute; left: 0; top: 0; width: 58mm !important; padding: 2mm 3mm !important; margin: 0 !important; background: white !important; color: black !important; font-size: 9pt !important; line-height: 1.2 !important; box-shadow: none !important; }
-    }
-  </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-</head>
-<body class="text-slate-100 min-h-screen flex flex-col bg-grid-pattern relative antialiased selection:bg-cyan-500 selection:text-white">
-  <div class="fixed top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
-  <div class="fixed bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
-  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-  </main>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block text-xs font-semibold text-slate-400 mb-1">Role / Akses</label><select id="userRole" class="w-full glass-input px-3 py-2 rounded-xl text-xs outline-none bg-slate-900"><option value="kasir">Kasir</option><option value="admin">Administrator</option></select></div>
+          <div><label class="block text-xs font-semibold text-slate-400 mb-1">Status User</label><select id="userStatus" class="w-full glass-input px-3 py-2 rounded-xl text-xs outline-none bg-slate-900"><option value="active">Aktif</option><option value="inactive">Nonaktif</option></select></div>
+        </div>
+        <div id="userError" class="hidden text-xs text-rose-400 bg-rose-500/10 p-2.5 rounded-xl border border-rose-500/20"></div>
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeUserModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-xs text-slate-300 hover:bg-slate-700">Batal</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-cyan-500 text-slate-950 text-xs font-bold hover:bg-cyan-400 shadow-lg shadow-cyan-500/20">Simpan User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL CUSTOM PULSA -->
+  <div id="customPulsaModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="w-full max-w-sm glass-panel rounded-2xl p-6 border border-slate-800 space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="font-bold text-base text-slate-100">Detail Transaksi</h3>
+        <button onclick="toggleCustomPulsaModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div id="tarikTunaiInfo" class="hidden text-[11px] text-amber-400 bg-amber-500/10 p-3 rounded-lg border border-amber-500/30 mb-2 leading-tight">
+        <i data-lucide="info" class="w-4 h-4 inline-block mb-0.5"></i> Pada Tarik Tunai, <b>Total Tagihan POS</b> ini hanya mencatat <b>Biaya Jasa Admin</b>. Sistem akan otomatis mencatat uang fisik yang Anda berikan ke pelanggan sebagai <b>Kas Keluar</b> di Buku Kas.
+      </div>
+      <div class="space-y-3">
+        <div><label class="block text-xs font-semibold text-slate-400 mb-1">Deskripsi / Jenis Layanan</label><input type="text" id="customPulsaDesc" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs outline-none" placeholder="Contoh: Transfer Bank / Paket Data"></div>
+        <div><label class="block text-xs font-semibold text-slate-400 mb-1">Nominal Transaksi (Rp)</label><input type="number" id="customPulsaModalPrice" oninput="calculateCustomTransferTotal()" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs font-mono outline-none" placeholder="0"></div>
+        <div><label class="block text-xs font-semibold text-slate-400 mb-1">Biaya Admin / Jasa (Rp)</label><input type="number" id="customPulsaAdminFee" oninput="calculateCustomTransferTotal()" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs font-mono outline-none" placeholder="5000"></div>
+        <div><label class="block text-xs font-semibold text-slate-400 mb-1">Total Masuk Keranjang (Rp)</label><input type="number" id="customPulsaSellPrice" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs font-mono outline-none font-bold text-cyan-400 bg-slate-900 pointer-events-none" readonly placeholder="0"></div>
+      </div>
+      <button onclick="submitCustomPulsa()" class="w-full py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold rounded-xl transition">+ Masukkan Ke Keranjang</button>
+    </div>
+  </div>
+
+  <!-- MODAL RECEIPT -->
+  <div id="receiptModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="w-full max-w-xs glass-panel rounded-2xl p-4 border border-slate-800 space-y-4">
+      <div id="printableReceipt" class="bg-white text-slate-900 p-3 rounded-lg font-mono text-[11px] leading-tight space-y-2 shadow-lg w-[58mm] mx-auto">
+        <div class="text-center border-b border-dashed border-slate-600 pb-2"><h2 class="text-sm font-black tracking-wider text-black uppercase">M-PONSEL</h2><p class="text-[9px] text-slate-700">Konter HP, Pulsa & Servis</p></div>
+        <div class="space-y-0.5 text-[10px] border-b border-dashed border-slate-600 pb-1.5"><div class="flex justify-between"><span>Nota:</span><span id="recNoteNo" class="font-bold">#MP-000</span></div><div class="flex justify-between"><span>Tgl:</span><span id="recDate">00/00/00</span></div><div class="flex justify-between"><span>Kasir:</span><span id="recCashier">Admin</span></div></div>
+        <div id="recItemsList" class="space-y-1 border-b border-dashed border-slate-600 pb-2 text-[10px]"></div>
+        <div class="space-y-0.5 text-[10px]"><div class="flex justify-between font-bold text-[11px] pt-0.5"><span>TOTAL:</span><span id="recTotal">Rp 0</span></div><div class="flex justify-between text-slate-700"><span>Bayar:</span><span id="recPay">Rp 0</span></div><div class="flex justify-between text-slate-700"><span>Kembali:</span><span id="recChange">Rp 0</span></div></div>
+        <div class="text-center pt-2 border-t border-dashed border-slate-600 text-[9px] text-slate-800"><p class="font-bold">*** TERIMA KASIH ***</p></div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="closeReceiptModal()" class="flex-1 py-2 bg-slate-800 text-slate-300 hover:text-white text-xs rounded-xl transition">Tutup</button>
+        <button onclick="window.print()" class="flex-1 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition">Cetak Struk</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     let appState = { currentUser: null, cart: [], currentCategory: 'aksesoris', selectedOperator: 'Telkomsel' };
     const defaultProducts = [
@@ -56,6 +59,7 @@
       { id: 'u1', name: 'Administrator M-Ponsel', username: 'admin', password: 'admin123', role: 'admin', status: 'active' },
       { id: 'u2', name: 'Kasir Toko 1', username: 'kasir', password: 'kasir123', role: 'kasir', status: 'active' }
     ];
+
     function initData() {
       if (!localStorage.getItem('mponsel_products')) localStorage.setItem('mponsel_products', JSON.stringify(defaultProducts));
       if (!localStorage.getItem('mponsel_users')) localStorage.setItem('mponsel_users', JSON.stringify(defaultUsers));
@@ -63,23 +67,312 @@
     }
     
     function getProducts() { return JSON.parse(localStorage.getItem('mponsel_products')) || []; }
+    
+    // FUNGSI DIUBAH UNTUK HYBRID SYNC FIRESTORE
     function setProducts(data) { 
+        // 1. Simpan ke lokal agar UI tetap cepat dan responsif
         localStorage.setItem('mponsel_products', JSON.stringify(data)); 
+        
+        // 2. Sinkronisasikan secara otomatis ke Firestore di background
         if (window.saveProductsToFirestore) {
             window.saveProductsToFirestore(data);
         }
     }
+    
     function getUsers() { return JSON.parse(localStorage.getItem('mponsel_users')) || []; }
     function setUsers(data) { localStorage.setItem('mponsel_users', JSON.stringify(data)); }
     function getTransactions() { return JSON.parse(localStorage.getItem('mponsel_transactions')) || []; }
     function setTransactions(data) { localStorage.setItem('mponsel_transactions', JSON.stringify(data)); }
+
     document.addEventListener("DOMContentLoaded", () => {
       initData();
       lucide.createIcons();
+      updateClock(); 
+      setInterval(updateClock, 1000);
+      const activeSession = JSON.parse(sessionStorage.getItem('mponsel_session'));
+      if (activeSession) { 
+          appState.currentUser = activeSession; 
+          applyUserPermissions(); 
+          document.getElementById('loginOverlay').classList.add('hidden'); 
+          checkLowStock(); 
+      }
+      renderBarangList(); 
+      renderInventoryTable(); 
+      switchReportTab('riwayat'); 
+      renderUserTable();
     });
-  </script>
-</body>
-</html>
+
+    // FUNGSI ROKOK KETENGAN
+    function selectRokokBrand(brandName, pricePerBatang) {
+      document.getElementById('rokokNama').value = brandName;
+      document.getElementById('rokokHargaSatuan').value = pricePerBatang;
+      calculateRokokTotal();
+    }
+
+    function setRokokBatang(qty) {
+      document.getElementById('rokokBatang').value = qty;
+      calculateRokokTotal();
+    }
+
+    function calculateRokokTotal() {
+      const batang = parseInt(document.getElementById('rokokBatang').value) || 0;
+      const satuan = parseFloat(document.getElementById('rokokHargaSatuan').value) || 0;
+      const total = batang * satuan;
+      document.getElementById('rokokTotalHarga').value = total;
+    }
+
+    function addRokokToCart() {
+      const namaRokok = document.getElementById('rokokNama').value.trim();
+      const batang = parseInt(document.getElementById('rokokBatang').value) || 0;
+      const satuan = parseFloat(document.getElementById('rokokHargaSatuan').value) || 0;
+      const totalHarga = parseFloat(document.getElementById('rokokTotalHarga').value) || 0;
+
+      if (!namaRokok) {
+        alert('Pilih atau masukkan nama merek rokok terlebih dahulu!');
+        return;
+      }
+      if (batang <= 0 || totalHarga <= 0) {
+        alert('Jumlah batang dan harga harus valid!');
+        return;
+      }
+
+      // Estimasi modal kasar (misal modal diasumsikan 80% dari harga jual ketengan agar profit harian akurat, atau 0)
+      const estimasiModalSatuan = Math.round(satuan * 0.8);
+
+      appState.cart.push({
+        id: 'ROKOK-' + Date.now(),
+        name: `Rokok ${namaRokok} (${batang} btg)`,
+        type: 'rokok',
+        subtype: 'Rokok Ketengan',
+        buyPrice: estimasiModalSatuan * batang,
+        sellPrice: totalHarga,
+        qty: 1
+      });
+
+      // Reset form rokok
+      document.getElementById('rokokBatang').value = '1';
+      calculateRokokTotal();
+      renderCart();
+    }
+
+    // FUNGSI EXPORT & IMPORT SELURUH DATABASE APLIKASI
+    function exportFullDatabase() {
+      const fullDb = {
+        app_name: "M-PONSEL",
+        export_date: new Date().toISOString(),
+        products: getProducts(),
+        users: getUsers(),
+        transactions: getTransactions()
+      };
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullDb, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `MPONSEL_Full_Database_${new Date().toISOString().split('T')[0]}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function importFullDatabase(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (!parsed.products || !parsed.transactions || !parsed.users) {
+            alert("File database tidak valid atau format salah!");
+            return;
+          }
+
+          if (confirm("PERHATIAN: Mengimpor database akan menimpa seluruh data produk, transaksi, buku kas, dan user saat ini dengan data dari file backup. Lanjutkan?")) {
+            setProducts(parsed.products);
+            setUsers(parsed.users);
+            setTransactions(parsed.transactions);
+
+            alert("Berhasil! Seluruh database aplikasi berhasil dipulihkan.");
+            location.reload(); 
+          }
+        } catch (err) {
+          console.error(err);
+          alert("Gagal membaca file backup database. Pastikan file berformat .json yang benar.");
+        } finally {
+          event.target.value = '';
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // FUNGSI CEK STOK MENIPIS
+    function checkLowStock() {
+      const products = getProducts();
+      const lowStockProducts = products.filter(p => p.stock <= 0);
+      const alertContainer = document.getElementById('lowStockAlertContainer');
+      
+      if (lowStockProducts.length > 0) {
+          let itemsList = lowStockProducts.map(p => `<b>${p.name}</b> (Sisa: ${p.stock})`).join(', ');
+          alertContainer.innerHTML = `
+              <div class="bg-rose-500/10 border border-rose-500/30 p-3.5 rounded-xl flex items-start gap-3 text-rose-400 text-xs shadow-lg">
+                  <i data-lucide="alert-triangle" class="w-5 h-5 shrink-0 mt-0.5"></i>
+                  <div>
+                      <strong class="font-bold text-sm">Peringatan: Stok Habis (0 pcs)!</strong>
+                      <p class="mt-1 leading-relaxed text-slate-300">Produk berikut hampir atau sudah habis: <span class="text-rose-300">${itemsList}</span>. Segera lakukan restok agar penjualan tidak terhambat.</p>
+                  </div>
+              </div>
+          `;
+          alertContainer.classList.remove('hidden');
+      } else {
+          alertContainer.innerHTML = '';
+          alertContainer.classList.add('hidden');
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function updateClock() { 
+        document.getElementById('currentDateTime').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); 
+    }
+    
+    function togglePasswordVisibility(inputId, iconId) { 
+        const i=document.getElementById(inputId), ic=document.getElementById(iconId); 
+        if(i.type==='password'){
+            i.type='text'; 
+            ic.setAttribute('data-lucide','eye-off');
+        }else{
+            i.type='password'; 
+            ic.setAttribute('data-lucide','eye');
+        } 
+        lucide.createIcons(); 
+    }
+    
+    function handleLogin(e) {
+      e.preventDefault();
+      const uInput = document.getElementById('loginUsername').value.trim();
+      const pInput = document.getElementById('loginPassword').value.trim();
+      
+      const user = getUsers().find(u => u.username === uInput && u.password === pInput && u.status === 'active');
+      if (user) { 
+          appState.currentUser = user; 
+          sessionStorage.setItem('mponsel_session', JSON.stringify(user)); 
+          document.getElementById('loginOverlay').classList.add('hidden'); 
+          document.getElementById('loginError').classList.add('hidden'); 
+          applyUserPermissions(); 
+          checkLowStock(); 
+      } else { 
+          document.getElementById('loginError').classList.remove('hidden'); 
+      }
+    }
+    
+    function handleLogout() { 
+        if(confirm('Keluar dari sistem?')) { 
+            sessionStorage.removeItem('mponsel_session'); 
+            appState.currentUser = null; 
+            document.getElementById('loginOverlay').classList.remove('hidden'); 
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+        } 
+    }
+    
+    function applyUserPermissions() {
+      const u = appState.currentUser; 
+      if(!u) return;
+      document.getElementById('currentUserName').innerText = u.name; 
+      document.getElementById('currentUserRole').innerText = u.role === 'admin' ? 'Administrator' : 'Kasir Toko'; 
+      document.getElementById('userAvatar').innerText = u.name.charAt(0).toUpperCase();
+      document.querySelectorAll('.admin-only').forEach(el => { 
+          if(u.role==='admin') el.classList.remove('hidden'); 
+          else el.classList.add('hidden'); 
+      });
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+      document.querySelectorAll('.nav-tab').forEach(btn => { 
+          btn.classList.remove('bg-cyan-600', 'text-white', 'shadow-lg'); 
+          btn.classList.add('text-slate-400'); 
+      });
+      const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+      if (activeBtn) { 
+          activeBtn.classList.remove('text-slate-400'); 
+          activeBtn.classList.add('bg-cyan-600', 'text-white', 'shadow-lg'); 
+      }
+      if (tabId === 'inventory') renderInventoryTable();
+      if (tabId === 'history') switchReportTab('riwayat');
+      if (tabId === 'users') renderUserTable();
+    }
+    
+    function switchReportTab(view) {
+      const views = ['riwayat', 'aruskas', 'bulanan'];
+      views.forEach(v => {
+        document.getElementById(`view-rep-${v}`).classList.add('hidden');
+        document.getElementById(`btn-rep-${v}`).className = "px-4 py-2 bg-slate-800/80 text-slate-300 hover:text-white text-xs font-bold rounded-xl transition whitespace-nowrap flex items-center gap-2";
+      });
+
+      document.getElementById(`view-rep-${view}`).classList.remove('hidden');
+      document.getElementById(`btn-rep-${view}`).className = "px-4 py-2 bg-cyan-500 text-slate-950 text-xs font-bold rounded-xl transition shadow-md whitespace-nowrap flex items-center gap-2";
+
+      if (view === 'riwayat') { 
+          renderHistoryTable(); 
+          updateDashboardStats(); 
+      } 
+      else if (view === 'aruskas') { 
+          renderArusKas(); 
+      } 
+      else if (view === 'bulanan') {
+          if (!document.getElementById('filterBulan').value) {
+             const now = new Date();
+             const yyyy = now.getFullYear();
+             const mm = String(now.getMonth() + 1).padStart(2, '0');
+             document.getElementById('filterBulan').value = `${yyyy}-${mm}`;
+          }
+          renderLaporanBulanan();
+      }
+      lucide.createIcons();
+    }
+
+    function renderLaporanBulanan() {
+      const filterValue = document.getElementById('filterBulan').value;
+      if (!filterValue) return;
+
+      const transactions = getTransactions();
+      const tbody = document.getElementById('bulananTableBody');
+      tbody.innerHTML = '';
+
+      let totalOmzet = 0;
+      let totalLaba = 0;
+      let transactionCount = 0;
+
+      transactions.forEach(tx => {
+        if (tx.id.startsWith('MDL-') || tx.id.startsWith('MDL-WD-')) return; 
+
+        const d = new Date(tx.date);
+        const txMonth = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+
+        if (txMonth === filterValue) {
+          totalOmzet += tx.totalAmount;
+          totalLaba += (tx.netProfit || 0);
+          transactionCount++;
+
+          const itemsSummary = tx.items.map(i => `${i.name} (${i.qty}x)`).join(', ');
+          const displayDate = new Date(tx.date).toLocaleString('id-ID');
+
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-slate-900/40 transition';
+          tr.innerHTML = `
+            <td class="px-4 py-3 font-bold text-cyan-400">#${tx.id}</td>
+            <td class="px-4 py-3 text-slate-400 text-[11px]">${displayDate}</td>
+            <td class="px-4 py-3 text-slate-300">${tx.cashier}</td>
+            <td class="px-4 py-3 text-slate-300 max-w-xs truncate">${itemsSummary}</td>
+            <td class="px-4 py-3 text-right text-slate-100 font-bold">Rp ${tx.totalAmount.toLocaleString('id-ID')}</td>
+            <td class="admin-only px-4 py-3 text-right text-emerald-400 font-bold">Rp ${(tx.netProfit || 0).toLocaleString('id-ID')}</td>
+          `;
+          tbody.appendChild(tr);
+        }
+      });
+
+      document.getElementById('statBulananOmzet').innerText = `Rp ${totalOmzet.toLocaleString('id-ID')}`;>>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
   import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";

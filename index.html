@@ -1958,7 +1958,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-analytics.js";
-
+  import { getFirestore } from '[https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js](https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js)';
   const firebaseConfig = {
     apiKey: "AIzaSyDTPtqlkPppav6Fcz7dknQG4gTu7djeBY4",
     authDomain: "m-ponsel.firebaseapp.com",
@@ -1971,4 +1971,5 @@
 
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
+  const db = getFirestore(app);
 </script>

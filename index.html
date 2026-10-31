@@ -1296,6 +1296,18 @@
       
       transactions.unshift(newTx); 
       setTransactions(transactions);
+
+      // --- FIRESTORE WRITE OPERATION ---
+      if (window.db && window.addDoc && window.collection) {
+        window.addDoc(window.collection(window.db, "transactions"), newTx)
+          .then((docRef) => {
+            console.log("Transaksi berhasil disimpan di Firestore:", docRef.id);
+          })
+          .catch((error) => {
+            console.error("Gagal menyimpan ke Firestore:", error);
+          });
+      }
+
       showReceipt(newTx); 
       clearCart(); 
       renderBarangList(); 
@@ -1439,7 +1451,7 @@
       });
 
       if (saldo <= 0) {
-        alert('Saldo laci kas saat ini sudah Rp 0. Tidak ada yang perlu di-reset.');
+        alert('Saldo kas saat ini sudah Rp 0. Tidak ada yang perlu di-reset.');
         return;
       }
 
@@ -1953,23 +1965,29 @@
       }
     }
   </script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-analytics.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDTPtqlkPppav6Fcz7dknQG4gTu7djeBY4",
+      authDomain: "m-ponsel.firebaseapp.com",
+      projectId: "m-ponsel",
+      storageBucket: "m-ponsel.firebasestorage.app",
+      messagingSenderId: "273631311807",
+      appId: "1:273631311807:web:2ac9d0e500cde8a0b7930a",
+      measurementId: "G-FH6VSFBCPN"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    
+    // Ekspos ke window agar fungsi biasa dapat menggunakannya
+    window.db = getFirestore(app);
+    window.collection = collection;
+    window.addDoc = addDoc;
+  </script>
 </body>
 </html>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-analytics.js";
-  import { getFirestore } from '[https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js](https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js)';
-  const firebaseConfig = {
-    apiKey: "AIzaSyDTPtqlkPppav6Fcz7dknQG4gTu7djeBY4",
-    authDomain: "m-ponsel.firebaseapp.com",
-    projectId: "m-ponsel",
-    storageBucket: "m-ponsel.firebasestorage.app",
-    messagingSenderId: "273631311807",
-    appId: "1:273631311807:web:2ac9d0e500cde8a0b7930a",
-    measurementId: "G-FH6VSFBCPN"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-  const db = getFirestore(app);
-</script>

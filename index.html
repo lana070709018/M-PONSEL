@@ -1969,7 +1969,7 @@
     }
   </script>
 
-  <!-- INISIALISASI MODULE FIREBASE FIRESTORE STABIL -->
+  <!-- INISIALISASI MODULE FIREBASE FIRESTORE STABIL DENGAN ERROR HANDLING -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
     import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
@@ -1983,15 +1983,15 @@
       appId: "1:273631311807:web:2ac9d0e500cde8a0b7930a"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // Ekspos variabel & fungsi Firestore ke scope global window
-    window.db = db;
-    window.collection = collection;
-    window.addDoc = addDoc;
-    
-    console.log("Firebase Firestore terhubung secara global.");
+    try {
+      const app = initializeApp(firebaseConfig);
+      window.db = getFirestore(app);
+      window.collection = collection;
+      window.addDoc = addDoc;
+      console.log("Firebase Firestore terhubung secara global.");
+    } catch (e) {
+      console.error("Gagal inisialisasi Firebase:", e);
+    }
   </script>
 </body>
 </html>

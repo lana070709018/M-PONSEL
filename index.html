@@ -1263,7 +1263,8 @@
         changeEl.className = change < 0 && pay > 0 ? 'font-mono font-bold text-rose-400' : 'font-mono font-bold text-emerald-400'; 
     }
 
-    function processTransaction() {
+    // FUNGSI UTAMA PENJUALAN DENGAN INTEGRASI FIRESTORE (ASINKRON)
+    async function processTransaction() {
       const total = appState.cart.reduce((sum, i) => sum + (i.sellPrice * i.qty), 0), 
             pay = parseFloat(document.getElementById('payAmount').value) || 0;
             
@@ -1297,15 +1298,17 @@
       transactions.unshift(newTx); 
       setTransactions(transactions);
 
-      // --- FIRESTORE WRITE OPERATION ---
+      // --- SINKRONISASI KE FIRESTORE DATABASE ---
       if (window.db && window.addDoc && window.collection) {
-        window.addDoc(window.collection(window.db, "transactions"), newTx)
-          .then((docRef) => {
-            console.log("Transaksi berhasil disimpan di Firestore:", docRef.id);
-          })
-          .catch((error) => {
-            console.error("Gagal menyimpan ke Firestore:", error);
-          });
+        try {
+          const docRef = await window.addDoc(window.collection(window.db, "transactions"), newTx);
+          console.log("Transaksi sukses tersimpan di Firestore dengan ID:", docRef.id);
+        } catch (error) {
+          console.error("Gagal menyimpan ke Firestore:", error);
+          alert("Peringatan: Gagal mengirim transaksi ke cloud Firestore (" + error.message + ")");
+        }
+      } else {
+        console.warn("Firestore belum siap sepenuhnya.");
       }
 
       showReceipt(newTx); 
@@ -1966,6 +1969,7 @@
     }
   </script>
 
+  <!-- INISIALISASI MODULE FIREBASE FIRESTORE STABIL -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-analytics.js";
@@ -1984,10 +1988,11 @@
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
     
-    // Ekspos ke window agar fungsi biasa dapat menggunakannya
+    // Simpan di window scope agar fungsi biasa dapat memanggil Firestore
     window.db = getFirestore(app);
     window.collection = collection;
     window.addDoc = addDoc;
+    console.log("Firebase Firestore terhubung secara global.");
   </script>
 </body>
 </html>

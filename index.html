@@ -1261,7 +1261,7 @@
         changeEl.className = change < 0 && pay > 0 ? 'font-mono font-bold text-rose-400' : 'font-mono font-bold text-emerald-400'; 
     }
 
-    // FUNGSI UTAMA PENJUALAN AMAN & TERPROTEKSI
+    // FUNGSI UTAMA PENJUALAN DENGAN LANGSUNG MENAMPILKAN MODAL STRUK
     async function processTransaction() {
       if (appState.cart.length === 0) {
         alert('Keranjang belanja masih kosong!');
@@ -1314,7 +1314,8 @@
         }
       }
 
-      showReceipt(newTx, true); 
+      // Buka modal struk tanpa otomatis trigger window.print() agar tidak diblokir browser
+      showReceipt(newTx, false); 
       clearCart(); 
       renderBarangList(); 
       renderInventoryTable(); 
@@ -1323,7 +1324,7 @@
       checkLowStock();
     }
 
-    function showReceipt(tx, autoPrint = true) {
+    function showReceipt(tx, autoPrint = false) {
       document.getElementById('recNoteNo').innerText = `#${tx.id}`; 
       document.getElementById('recDate').innerText = new Date(tx.date).toLocaleString('id-ID'); 
       document.getElementById('recCashier').innerText = tx.cashier;

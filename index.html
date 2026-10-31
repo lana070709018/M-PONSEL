@@ -1972,7 +1972,6 @@
   <!-- INISIALISASI MODULE FIREBASE FIRESTORE STABIL -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-analytics.js";
     import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -1981,17 +1980,17 @@
       projectId: "m-ponsel",
       storageBucket: "m-ponsel.firebasestorage.app",
       messagingSenderId: "273631311807",
-      appId: "1:273631311807:web:2ac9d0e500cde8a0b7930a",
-      measurementId: "G-FH6VSFBCPN"
+      appId: "1:273631311807:web:2ac9d0e500cde8a0b7930a"
     };
 
     const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    
-    // Simpan di window scope agar fungsi biasa dapat memanggil Firestore
-    window.db = getFirestore(app);
+    const db = getFirestore(app);
+
+    // Ekspos variabel & fungsi Firestore ke scope global window
+    window.db = db;
     window.collection = collection;
     window.addDoc = addDoc;
+    
     console.log("Firebase Firestore terhubung secara global.");
   </script>
 </body>

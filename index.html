@@ -1318,87 +1318,105 @@
         changeEl.className = change < 0 && pay > 0 ? 'font-mono font-bold text-rose-400' : 'font-mono font-bold text-emerald-400'; 
     }
 
-    // FUNGSI UTAMA PENJUALAN DENGAN LANGSUNG MENAMPILKAN MODAL STRUK
+    // FUNGSI UTAMA PENJUALAN DENGAN ISOLASI ERROR FIRESTORE AGAR POP-UP STRUK SELALU MUNCUL
     async function processTransaction() {
-      if (appState.cart.length === 0) {
-        alert('Keranjang belanja masih kosong!');
-        return;
-      }
-
-      const total = appState.cart.reduce((sum, i) => sum + (i.sellPrice * i.qty), 0); 
-      const pay = parseFloat(document.getElementById('payAmount').value) || 0;
-            
-      if (pay < total) { 
-        alert('Uang pembayaran dari pelanggan masih kurang!'); 
-        return; 
-      }
-      
-      const products = getProducts(); 
-      let totalProfit = 0;
-      
-      appState.cart.forEach(item => {
-        totalProfit += (item.sellPrice - item.buyPrice) * item.qty;
-        if (item.type === 'barang') { 
-            const p = products.find(prod => prod.id === item.id); 
-            if (p) p.stock = Math.max(0, p.stock - item.qty); 
+      try {
+        if (!Array.isArray(appState.cart) || appState.cart.length === 0) {
+          alert('Keranjang belanja masih kosong!');
+          return;
         }
-      });
-      
-      setProducts(products);
-      
-      const transactions = getTransactions();
-      const newTx = { 
-          id: 'MP-' + Date.now().toString().slice(-6), 
-          date: new Date().toISOString(), 
-          cashier: appState.currentUser ? appState.currentUser.name : 'Kasir', 
-          items: [...appState.cart], 
-          totalAmount: total, 
-          payAmount: pay, 
-          changeAmount: pay - total, 
-          netProfit: totalProfit 
-      };
-      
-      transactions.unshift(newTx); 
-      setTransactions(transactions);
 
-      // SINKRONISASI KE FIRESTORE DATABASE
-      if (window.db && window.addDoc && window.collection) {
-        try {
-          await window.addDoc(window.collection(window.db, "transactions"), newTx);
-          console.log("Transaksi sukses tersimpan di Firestore.");
-        } catch (error) {
-          console.error("Gagal menyimpan ke Firestore:", error);
+        const total = appState.cart.reduce((sum, i) => sum + (Number(i.sellPrice || 0) * Number(i.qty || 1)), 0);
+        const payInput = document.getElementById('payAmount');
+        const pay = parseFloat(payInput ? payInput.value : 0) || 0;
+
+        if (pay < total) {
+          alert('Uang pembayaran dari pelanggan masih kurang!');
+          return;
         }
-      }
 
-      showReceipt(newTx, false); 
-      clearCart(); 
-      renderBarangList(); 
-      renderInventoryTable(); 
-      updateDashboardStats(); 
-      renderArusKas();
-      checkLowStock();
+        const products = getProducts();
+        let totalProfit = 0;
+
+        appState.cart.forEach(item => {
+          const sell = Number(item.sellPrice || 0);
+          const buy = Number(item.buyPrice || 0);
+          const qty = Number(item.qty || 1);
+          totalProfit += (sell - buy) * qty;
+
+          if (item.type === 'barang') {
+            const p = products.find(prod => prod.id === item.id);
+            if (p) p.stock = Math.max(0, Number(p.stock || 0) - qty);
+          }
+        });
+
+        setProducts(products);
+
+        const transactions = getTransactions();
+        const newTx = {
+          id: 'MP-' + Date.now().toString().slice(-6),
+          date: new Date().toISOString(),
+          cashier: appState.currentUser ? appState.currentUser.name : 'Kasir',
+          items: appState.cart.map(i => ({ ...i })),
+          totalAmount: total,
+          payAmount: pay,
+          changeAmount: Math.max(0, pay - total),
+          netProfit: totalProfit
+        };
+
+        transactions.unshift(newTx);
+        setTransactions(transactions);
+
+        // Tampilkan pop-up struk & perbarui UI lokal terlebih dahulu
+        showReceipt(newTx, false);
+        clearCart();
+        renderBarangList();
+        renderInventoryTable();
+        updateDashboardStats();
+        renderArusKas();
+        checkLowStock();
+
+        // Sinkronisasi ke Firestore secara aman tanpa menghambat pop-up struk
+        if (window.db && window.addDoc && window.collection) {
+          try {
+            await window.addDoc(window.collection(window.db, "transactions"), newTx);
+            console.log("Transaksi sukses tersimpan di Firestore.");
+          } catch (fsError) {
+            console.warn("Gagal sinkron ke Firestore (tersimpan lokal):", fsError);
+          }
+        }
+      } catch (err) {
+        console.error("Kesalahan saat memproses transaksi:", err);
+        alert("Terjadi kesalahan saat memproses transaksi: " + (err && err.message ? err.message : err));
+      }
     }
 
     function showReceipt(tx, autoPrint = false) {
-      document.getElementById('recNoteNo').innerText = `#${tx.id}`; 
-      document.getElementById('recDate').innerText = new Date(tx.date).toLocaleString('id-ID'); 
-      document.getElementById('recCashier').innerText = tx.cashier;
-      
-      const itemsContainer = document.getElementById('recItemsList'); 
+      const modal = document.getElementById('receiptModal');
+      if (!modal || !tx) return;
+
+      document.getElementById('recNoteNo').innerText = `#${tx.id}`;
+      document.getElementById('recDate').innerText = new Date(tx.date).toLocaleString('id-ID');
+      document.getElementById('recCashier').innerText = tx.cashier || 'Kasir';
+
+      const itemsContainer = document.getElementById('recItemsList');
       itemsContainer.innerHTML = '';
-      
-      tx.items.forEach(item => { 
-          const line = document.createElement('div'); 
-          line.className = 'flex justify-between items-start'; 
-          line.innerHTML = `<div><div class="line-clamp-2 pr-1">${item.name}</div><div class="text-[9px] text-slate-700">${item.qty}x</div></div><div class="font-bold">Rp ${(item.sellPrice * item.qty).toLocaleString('id-ID')}</div>`; 
-          itemsContainer.appendChild(line); 
+
+      (tx.items || []).forEach(item => {
+        const qty = Number(item.qty || 1);
+        const subtotalItem = Number(item.sellPrice || 0) * qty;
+        const line = document.createElement('div');
+        line.className = 'flex justify-between items-start';
+        line.innerHTML = `<div><div class="line-clamp-2 pr-1">${item.name}</div><div class="text-[9px] text-slate-700">${qty}x</div></div><div class="font-bold">Rp ${subtotalItem.toLocaleString('id-ID')}</div>`;
+        itemsContainer.appendChild(line);
       });
-      
-      document.getElementById('recTotal').innerText = `Rp ${tx.totalAmount.toLocaleString('id-ID')}`; 
-      document.getElementById('recPay').innerText = `Rp ${tx.payAmount.toLocaleString('id-ID')}`; 
-      document.getElementById('recChange').innerText = `Rp ${tx.changeAmount.toLocaleString('id-ID')}`; 
-      document.getElementById('receiptModal').classList.remove('hidden');
+
+      document.getElementById('recTotal').innerText = `Rp ${Number(tx.totalAmount || 0).toLocaleString('id-ID')}`;
+      document.getElementById('recPay').innerText = `Rp ${Number(tx.payAmount || 0).toLocaleString('id-ID')}`;
+      document.getElementById('recChange').innerText = `Rp ${Number(tx.changeAmount || 0).toLocaleString('id-ID')}`;
+
+      modal.classList.remove('hidden');
+      modal.style.display = 'flex';
 
       if (autoPrint) {
         setTimeout(() => {
@@ -1410,9 +1428,12 @@
         }, 300);
       }
     }
-    
-    function closeReceiptModal() { 
-        document.getElementById('receiptModal').classList.add('hidden'); 
+
+    function closeReceiptModal() {
+      const modal = document.getElementById('receiptModal');
+      if (!modal) return;
+      modal.classList.add('hidden');
+      modal.style.display = 'none';
     }
 
     function renderInventoryTable() {
@@ -2079,7 +2100,6 @@
       console.log("Firebase Firestore terhubung secara global.");
     } catch (e) {
       console.error("Gagal inisialisasi Firebase:", e);
-      alert("Gagal inisialisasi Firebase: " + (e && e.message ? e.message : e));
     }
   </script>
 </body>
